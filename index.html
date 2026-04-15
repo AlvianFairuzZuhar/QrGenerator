@@ -3,549 +3,1106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Generator - VianFairuzz</title>
-    <!-- Library QR Code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Font Google: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
+    <title>QR Generator — MA Muhammadiyah 01 Karangasem Paciran</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        /* ========== CSS VARIABLES ========== */
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg: #f3f4f6;
-            --surface: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --radius: 8px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --primary: #047857;
+            --primary-hover: #065f46;
+            --primary-glow: rgba(4,120,87,0.25);
+            --primary-light: #ecfdf5;
+            --primary-border: #a7f3d0;
+            --bg: #f6faf8;
+            --card: rgba(255,255,255,0.68);
+            --card-solid: #ffffff;
+            --card-border: rgba(255,255,255,0.55);
+            --card-shadow: 0 8px 40px rgba(4,120,87,0.06), 0 1.5px 4px rgba(0,0,0,0.03);
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --input-bg: rgba(255,255,255,0.92);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-
+        /* ========== RESET & BASE ========== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Container Utama */
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            background: var(--surface);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            display: grid;
-            grid-template-columns: 1fr 400px; /* Kiri Form, Kanan Preview */
-            margin-bottom: 2rem; /* Jarak ke footer */
+        /* ========== ANIMATED BACKGROUND ========== */
+        .bg-layer {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background: linear-gradient(160deg, #ecfdf5 0%, #f0fdf8 35%, #f8fafc 65%, #f0fdf4 100%);
+        }
+        .bg-blob {
+            position: fixed; border-radius: 50%;
+            filter: blur(90px); opacity: 0.18;
+            pointer-events: none; z-index: 0;
+        }
+        .blob-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, #059669, #34d399);
+            top: -120px; right: -100px;
+            animation: blobFloat 22s ease-in-out infinite;
+        }
+        .blob-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #047857, #6ee7b7);
+            bottom: -80px; left: -80px;
+            animation: blobFloat 26s ease-in-out infinite reverse;
+        }
+        .blob-3 {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, #10b981, #a7f3d0);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: blobFloat 18s ease-in-out infinite 3s;
+            opacity: 0.1;
+        }
+        /* Pola titik halus */
+        .bg-dots {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image: radial-gradient(circle, #047857 0.6px, transparent 0.6px);
+            background-size: 28px 28px;
+            opacity: 0.04;
+        }
+        @keyframes blobFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -25px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
         }
 
-        /* Responsive Breakpoint */
-        @media (max-width: 850px) {
-            .container { grid-template-columns: 1fr; }
+        /* ========== TOP ACCENT BAR ========== */
+        .top-bar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 3px; z-index: 100;
+            background: linear-gradient(90deg, #059669, #34d399, #047857, #6ee7b7, #059669);
+            background-size: 300% 100%;
+            animation: barShimmer 6s linear infinite;
+        }
+        @keyframes barShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
         }
 
-        /* HEADER */
-        header {
-            grid-column: 1 / -1;
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid var(--border);
-            background: #fafafa;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header div h2 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.2rem; }
-        header div p { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; letter-spacing: 0.5px; }
-
-        /* Panel Kiri: Input */
-        .left-panel {
-            padding: 2rem;
-            border-right: 1px solid var(--border);
-        }
-        @media (max-width: 850px) { .left-panel { border-right: none; border-bottom: 1px solid var(--border); } }
-
-        /* Panel Kanan: Output */
-        .right-panel {
-            padding: 2rem;
-            background: #f9fafb;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        /* ========== PAGE WRAPPER ========== */
+        .page-wrapper {
+            position: relative; z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 56px 20px 60px;
         }
 
-        /* Dropdown Tipe */
-        .type-select {
-            width: 100%;
-            padding: 0.75rem;
-            font-size: 1rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 1.5rem;
-            background-color: white;
-            color: var(--text-main);
-            cursor: pointer;
+        /* ========== HEADER ========== */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .header-badge {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), #059669);
+            color: white; font-size: 22px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+        .header-title {
+            font-size: 28px; font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .header-subtitle {
+            font-size: 14px; font-weight: 400;
+            color: var(--text-secondary);
+            margin-top: 6px;
         }
 
-        /* Forms */
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: var(--text-main); }
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 0.95rem;
+        /* ========== GLASS CARD ========== */
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            padding: 28px;
         }
-        .form-group input:focus, .form-group textarea:focus {
-            outline: 2px solid var(--primary);
-            border-color: transparent;
+        .card-appear {
+            animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
         }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.22s; }
 
-        /* Sections Visibility */
-        .input-section { display: none; animation: fadeIn 0.3s ease; }
-        .input-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Settings Grid */
-        .settings-grid {
+        /* ========== MAIN GRID ========== */
+        .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px dashed var(--border);
+            gap: 24px;
+            align-items: start;
         }
 
-        /* Buttons */
-        .btn {
+        /* ========== TABS ========== */
+        .tabs {
+            display: flex; gap: 4px;
+            background: #f1f5f4;
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 22px;
+        }
+        .tab {
+            flex: 1;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 10px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 13px; font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.28s cubic-bezier(0.16,1,0.3,1);
+            user-select: none;
+            border: none; background: none;
+        }
+        .tab:hover { color: var(--text-secondary); }
+        .tab.active {
+            background: var(--card-solid);
+            color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .tab i { font-size: 12px; }
+
+        /* ========== FORM ========== */
+        .form-area {
+            margin-bottom: 20px;
+            animation: fadeIn 0.25s ease both;
+        }
+        .form-group { margin-bottom: 14px; }
+        .form-label {
             display: block;
+            font-size: 11px; font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .input-field {
             width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--input-bg);
+            font-family: inherit;
+            font-size: 14px; font-weight: 400;
+            color: var(--text);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .input-field::placeholder { color: #b0bec5; }
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(4,120,87,0.1);
+        }
+        select.input-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
             cursor: pointer;
-            transition: 0.2s;
-            text-align: center;
         }
-        .btn-primary { background: var(--primary); color: white; margin-top: 2rem; }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
-        
-        .btn-download {
-            background: var(--text-main);
-            color: white;
-            margin-top: 1.5rem;
-            display: none;
-        }
-        .btn-download:hover { background: black; }
 
-        /* Canvas Output */
-        #finalCanvas {
-            max-width: 100%;
-            height: auto;
-            box-shadow: var(--shadow);
-            border-radius: 4px;
-            border: 1px solid var(--border);
+        /* ========== CUSTOMIZATION ========== */
+        .customization {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--primary-light);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(4,120,87,0.08);
+        }
+        .section-label {
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .color-row {
+            display: flex; gap: 20px;
+        }
+        .color-group { flex: 1; }
+        .color-label {
+            display: block;
+            font-size: 12px; font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .color-picker-wrap {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .color-picker-wrap input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px; height: 40px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer; padding: 3px;
             background: white;
+            transition: border-color 0.2s;
         }
-        
-        /* Helper Classes */
-        .hidden { display: none; }
-        
-        /* Custom File Input */
-        .file-upload {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
+        .color-picker-wrap input[type="color"]:hover {
+            border-color: var(--primary-border);
+        }
+        .color-picker-wrap input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-picker-wrap input[type="color"]::-webkit-color-swatch {
+            border: none; border-radius: 6px;
+        }
+        .color-picker-wrap input[type="color"]::-moz-color-swatch {
+            border: none; border-radius: 6px;
+        }
+        .color-value {
+            font-size: 12px; font-weight: 500;
+            font-family: 'Courier New', monospace;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn-primary {
             width: 100%;
-        }
-        .file-upload input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .file-btn {
-            background: #e5e7eb;
-            color: var(--text-main);
+            padding: 13px 20px;
             border: none;
-            padding: 0.6rem;
-            border-radius: var(--radius);
-            text-align: center;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+            color: white;
+            font-family: inherit;
+            font-size: 14px; font-weight: 700;
             cursor: pointer;
-            width: 100%;
-            font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            position: relative; overflow: hidden;
+            margin-bottom: 24px;
         }
-        .file-btn:hover { background: #d1d5db; }
+        .btn-primary::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px var(--primary-glow);
+        }
+        .btn-primary:hover::before { opacity: 1; }
+        .btn-primary:active { transform: translateY(0); }
 
-        /* FOOTER DESIGN */
-        footer {
+        .btn-secondary {
             width: 100%;
-            max-width: 1000px;
-            background-color: #111827; /* Gelap */
-            color: #f9fafb;
-            border-radius: 12px;
-            padding: 2rem;
+            padding: 12px 20px;
+            border: 2px solid var(--primary-border);
+            border-radius: var(--radius-md);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-family: inherit;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.25s ease;
+            margin-top: 20px;
+        }
+        .btn-secondary:hover {
+            background: #d1fae5;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(4,120,87,0.1);
+        }
+        .btn-secondary:active { transform: translateY(0); }
+
+        /* ========== HISTORY ========== */
+        .history-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .history-clear {
+            font-family: inherit;
+            font-size: 11px; font-weight: 600;
+            color: var(--text-muted);
+            background: none; border: none;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 4px;
+            transition: color 0.2s;
+            padding: 4px 0;
+        }
+        .history-clear:hover { color: #ef4444; }
+        .history-list { display: flex; flex-direction: column; gap: 6px; }
+        .history-empty {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 16px 0;
+        }
+        .history-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1.5px solid transparent;
+            gap: 8px;
+        }
+        .history-item:hover {
+            background: #d1fae5;
+            border-color: var(--primary-border);
+        }
+        .history-item-info {
+            display: flex; align-items: center; gap: 10px;
+            min-width: 0; flex: 1;
+        }
+        .history-item-icon {
+            color: var(--primary);
+            font-size: 13px;
+            flex-shrink: 0;
+            width: 18px; text-align: center;
+        }
+        .history-item-text {
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .history-item-meta {
+            display: flex; align-items: center; gap: 6px;
+            flex-shrink: 0;
+        }
+        .history-item-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .history-item-delete {
+            background: none; border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 11px;
+            padding: 3px 5px;
+            border-radius: 4px;
+            transition: all 0.15s;
+            line-height: 1;
+        }
+        .history-item-delete:hover {
+            color: #ef4444;
+            background: rgba(239,68,68,0.08);
+        }
+
+        /* ========== PREVIEW PANEL ========== */
+        .preview-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px; font-weight: 700;
+            color: var(--text);
+        }
+        .preview-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .preview-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .qr-container {
+            background: var(--card-solid);
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border);
+            padding: 28px;
             display: flex;
-            align-items: center; /* Tengah vertikal */
+            align-items: center;
             justify-content: center;
-            gap: 2rem; /* Jarak logo dan teks */
-            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 300px;
+            transition: border-color 0.4s ease;
+        }
+        .qr-container.has-qr {
+            border-color: var(--primary-border);
         }
 
-        .footer-logo img {
-            width: 90px;
-            height: 90px;
-            object-fit: contain;
-            border: 1px solid rgba(255,255,255,0.2); /* Border tipis jika gambar transparan */
-            border-radius: 8px;
-            background-color: rgba(255,255,255,0.05); /* Placeholder bg */
+        /* Empty State */
+        .qr-empty {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 14px;
+            color: var(--text-muted);
+        }
+        .qr-empty-icon {
+            width: 64px; height: 64px;
+            border-radius: 16px;
+            background: #f1f5f4;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; color: #cbd5e1;
+        }
+        .qr-empty p { font-size: 13px; }
+
+        /* QR Code Area */
+        .qr-code-area {
+            display: flex; align-items: center; justify-content: center;
+            animation: qrAppear 0.35s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .qr-code-area img,
+        .qr-code-area canvas {
+            border-radius: 4px;
+        }
+        @keyframes qrAppear {
+            from { opacity: 0; transform: scale(0.88); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .footer-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.6;
-            text-align: left;
+        /* QR Footer Text */
+        .qr-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 18px;
+            line-height: 1.7;
+            letter-spacing: 0.15px;
+            animation: fadeIn 0.4s ease both;
+        }
+        .qr-footer b {
+            font-weight: 700;
+            color: #6b7280;
+            font-size: 11.5px;
         }
 
-        .footer-text p {
-            margin: 0;
-            font-size: 0.95rem;
+        /* ========== TOAST ========== */
+        .toast {
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 13px 24px;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 13px; font-weight: 600;
+            z-index: 1000;
+            transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+            backdrop-filter: blur(12px);
+            display: flex; align-items: center; gap: 8px;
+            white-space: nowrap;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
         }
-        
-        /* Footer Responsif */
-        @media (max-width: 600px) {
-            footer {
-                flex-direction: column;
-                text-align: center;
-                padding: 1.5rem;
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            background: rgba(4,120,87,0.92);
+            color: white;
+        }
+        .toast.error {
+            background: rgba(220,38,38,0.92);
+            color: white;
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
             }
-            .footer-text { text-align: center; }
         }
 
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 700px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-wrapper {
+                padding: 48px 16px 50px;
+            }
+            .header-title { font-size: 24px; }
+            .card { padding: 22px; }
+            .qr-container { padding: 20px; min-height: 240px; }
+            .color-row { gap: 14px; }
+            .tab { font-size: 12px; padding: 9px 6px; }
+            .tab span.tab-label-full { display: none; }
+            .tab span.tab-label-short { display: inline; }
+        }
+        @media (min-width: 701px) {
+            .tab span.tab-label-short { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- HEADER -->
-        <header>
-            <div>
-                <h2>QR Generator Standard</h2>
-                <p>By VianFairuzz</p>
+    <!-- Latar belakang animasi -->
+    <div class="bg-layer"></div>
+    <div class="bg-dots"></div>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+
+    <!-- Aksen bar atas -->
+    <div class="top-bar"></div>
+
+    <!-- Toast notifikasi -->
+    <div id="toast" class="toast"></div>
+
+    <div class="page-wrapper">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-badge" aria-hidden="true">
+                <i class="fas fa-qrcode"></i>
             </div>
-            <!-- Bisa tambahkan tombol atau icon disini jika perlu -->
+            <h1 class="header-title">QR Generator</h1>
+            <p class="header-subtitle">MA Muhammadiyah 01 Karangasem Paciran</p>
         </header>
 
-        <!-- PANEL KIRI: INPUT -->
-        <div class="left-panel">
-            <select id="qrType" class="type-select" onchange="switchType()">
-                <option value="url">🔗 URL / Website</option>
-                <option value="text">📝 Teks Biasa</option>
-                <option value="wifi">📶 WiFi Login</option>
-                <option value="email">📧 Email</option>
-                <option value="phone">📞 Telepon / Panggilan</option>
-                <option value="sms">💬 SMS</option>
-                <option value="vcard">👤 Kontak (vCard)</option>
-            </select>
+        <!-- Konten utama -->
+        <main class="main-grid">
 
-            <div id="forms-container">
-                
-                <!-- URL Form -->
-                <div id="form-url" class="input-section active">
-                    <div class="form-group">
-                        <label>URL Website</label>
-                        <input type="url" id="input-url" placeholder="https://www.contoh.com">
+            <!-- Panel Input -->
+            <section class="card card-appear delay-1" aria-label="Form input QR Code">
+
+                <!-- Tab switcher -->
+                <div class="tabs" role="tablist">
+                    <button class="tab active" data-tab="text" role="tab" aria-selected="true" onclick="switchTab('text')">
+                        <i class="fas fa-link"></i>
+                        <span class="tab-label-full">Text / URL</span>
+                        <span class="tab-label-short">Text</span>
+                    </button>
+                    <button class="tab" data-tab="wifi" role="tab" aria-selected="false" onclick="switchTab('wifi')">
+                        <i class="fas fa-wifi"></i>
+                        <span class="tab-label-full">WiFi</span>
+                        <span class="tab-label-short">WiFi</span>
+                    </button>
+                    <button class="tab" data-tab="contact" role="tab" aria-selected="false" onclick="switchTab('contact')">
+                        <i class="fas fa-address-card"></i>
+                        <span class="tab-label-full">Kontak</span>
+                        <span class="tab-label-short">Kontak</span>
+                    </button>
+                </div>
+
+                <!-- Input hidden state -->
+                <input type="hidden" id="currentType" value="text">
+
+                <!-- Form dinamis -->
+                <div id="dynamicForm" class="form-area"></div>
+
+                <!-- Kustomisasi warna -->
+                <div class="customization">
+                    <div class="section-label">Kustomisasi</div>
+                    <div class="color-row">
+                        <div class="color-group">
+                            <label class="color-label" for="qrColor">Warna QR</label>
+                            <div class="color-picker-wrap">
+                                <input type="color" id="qrColor" value="#000000">
+                                <span class="color-value" id="qrColorVal">#000000</span>
+                            </div>
+                        </div>
+                        <div class="color-group">
+                            <label class="color-label" for="qrBgColor">Latar Belakang</label>
+                            <div class="color-picker-wrap">
+                                <input type="color" id="qrBgColor" value="#ffffff">
+                                <span class="color-value" id="qrBgColorVal">#FFFFFF</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Text Form -->
-                <div id="form-text" class="input-section">
-                    <div class="form-group">
-                        <label>Isi Teks</label>
-                        <textarea id="input-text" rows="4" placeholder="Tulis sesuatu di sini..."></textarea>
+                <!-- Tombol Generate -->
+                <button class="btn-primary" onclick="handleGenerate()" aria-label="Generate QR Code">
+                    <i class="fas fa-bolt"></i> Generate QR Code
+                </button>
+
+                <!-- Riwayat -->
+                <div class="history-section">
+                    <div class="history-header">
+                        <span class="section-label" style="margin-bottom:0">Riwayat</span>
+                        <button class="history-clear" id="clearAllBtn" onclick="clearAllHistory()" style="display:none" aria-label="Hapus semua riwayat">
+                            <i class="fas fa-trash-alt"></i> Hapus Semua
+                        </button>
                     </div>
+                    <div id="historyList" class="history-list"></div>
                 </div>
 
-                <!-- WiFi Form -->
-                <div id="form-wifi" class="input-section">
-                    <div class="form-group">
-                        <label>Nama WiFi (SSID)</label>
-                        <input type="text" id="input-ssid" placeholder="Nama WiFi">
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="text" id="input-pass" placeholder="Password WiFi">
-                    </div>
-                    <div class="form-group">
-                        <label>Tipe Keamanan</label>
-                        <select id="input-enc">
-                            <option value="WPA">WPA/WPA2</option>
-                            <option value="WEP">WEP</option>
-                            <option value="nopass">Tidak ada Password</option>
-                        </select>
-                    </div>
+            </section>
+
+            <!-- Panel Preview -->
+            <section class="card card-appear delay-2" aria-label="Preview QR Code">
+                <div class="preview-header">
+                    <h2 class="section-title">Preview</h2>
+                    <span class="preview-badge" id="previewBadge" style="display:none">Live</span>
                 </div>
 
-                <!-- Email Form -->
-                <div id="form-email" class="input-section">
-                    <div class="form-group">
-                        <label>Alamat Email</label>
-                        <input type="email" id="input-email-addr" placeholder="contoh@email.com">
+                <div class="qr-container" id="qrContainer">
+                    <!-- State kosong -->
+                    <div class="qr-empty" id="qrPlaceholder">
+                        <div class="qr-empty-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <p>Masukkan data untuk melihat preview</p>
                     </div>
-                    <div class="form-group">
-                        <label>Subjek (Opsional)</label>
-                        <input type="text" id="input-email-subj" placeholder="Halo...">
-                    </div>
-                    <div class="form-group">
-                        <label>Pesan (Opsional)</label>
-                        <textarea id="input-email-body" rows="3" placeholder="Isi pesan..."></textarea>
-                    </div>
+                    <!-- Area QR -->
+                    <div id="qrcode" class="qr-code-area" style="display:none"></div>
                 </div>
 
-                <!-- Phone Form -->
-                <div id="form-phone" class="input-section">
-                    <div class="form-group">
-                        <label>Nomor Telepon</label>
-                        <input type="tel" id="input-phone" placeholder="628123456789">
-                    </div>
+                <!-- Footer QR -->
+                <div class="qr-footer" id="qrFooter" style="display:none">
+                    <b>MA MUHAMMADIYAH 1 PACIRAN</b><br>
+                    Pondok Pesantren Karangasem Muhammadiyah Paciran<br>
+                    Tahun Pelajaran 2025/2026
                 </div>
 
-                <!-- SMS Form -->
-                <div id="form-sms" class="input-section">
-                    <div class="form-group">
-                        <label>Nomor HP</label>
-                        <input type="tel" id="input-sms-num" placeholder="628123456789">
-                    </div>
-                    <div class="form-group">
-                        <label>Isi Pesan</label>
-                        <textarea id="input-sms-msg" rows="3" placeholder="Pesan SMS..."></textarea>
-                    </div>
-                </div>
+                <!-- Tombol Download -->
+                <button class="btn-secondary" id="downloadBtn" onclick="downloadQR()" style="display:none" aria-label="Unduh QR Code sebagai PNG">
+                    <i class="fas fa-download"></i> Unduh PNG
+                </button>
+            </section>
 
-                <!-- vCard Form -->
-                <div id="form-vcard" class="input-section">
-                    <div class="form-group">
-                        <label>Nama Lengkap</label>
-                        <input type="text" id="input-vc-name" placeholder="Nama Anda">
-                    </div>
-                    <div class="form-group">
-                        <label>Telepon</label>
-                        <input type="tel" id="input-vc-phone" placeholder="0812...">
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="input-vc-email" placeholder="email@contoh.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Organisasi (Opsional)</label>
-                        <input type="text" id="input-vc-org" placeholder="Nama Perusahaan/Sekolah">
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- PENGATURAN TAMBAHAN -->
-            <div class="settings-grid">
-                <div class="form-group">
-                    <label>Warna QR</label>
-                    <input type="color" id="color-qr" value="#000000" style="height: 40px; cursor: pointer;">
-                </div>
-                <div class="form-group">
-                    <label>Background</label>
-                    <input type="color" id="color-bg" value="#ffffff" style="height: 40px; cursor: pointer;">
-                </div>
-            </div>
-            
-            <div class="form-group" style="margin-top: 1rem;">
-                <label>Upload Logo (Tengah)</label>
-                <div class="file-upload">
-                    <button class="file-btn" id="file-btn-text">Pilih Gambar...</button>
-                    <input type="file" id="logo-upload" accept="image/*" onchange="handleLogo(this)">
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="generate()">Buat QR Code</button>
-        </div>
-
-        <!-- PANEL KANAN: OUTPUT -->
-        <div class="right-panel">
-            <!-- Canvas untuk Final Output -->
-            <canvas id="finalCanvas" width="500" height="500"></canvas>
-            
-            <button class="btn btn-download" id="downloadBtn" onclick="download()">Unduh PNG</button>
-            <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
-                *QR Code Level H (High Correction) aman untuk logo.
-            </p>
-        </div>
+        </main>
     </div>
 
-    <!-- FOOTER BARU: 3 BARIS + LOGO -->
-    <footer>
-        <!-- Logo Kiri -->
-        <div class="footer-logo">
-            <!-- 
-                PENTING: Ganti src="mamsaka.jpg" di bawah dengan file logo Anda.
-                Contoh: src="logo-sekolah.png" 
-            -->
-            <img src="https://via.placeholder.com/90x90/333/FFF?text=LOGO+SEKOLAH" alt="Logo Sekolah">
-        </div>
-        
-        <!-- Teks Kanan -->
-        <div class="footer-text">
-            <p>MA MUHAMMADIYAH 1 PACIRAN</p>
-            <p>Pondok Pesantren Karangasem Muhammadiyah Paciran</p>
-            <p>Tahun Pelajaran 2025/2026</p>
-        </div>
-    </footer>
+<script>
+    /* ========================================
+       QR Generator — MA Muhammadiyah 01
+       Karangasem Paciran
+       ======================================== */
 
-    <!-- Div Tersembunyi untuk Library QR -->
-    <div id="qr-raw" style="display:none;"></div>
+    const HISTORY_KEY = 'qr_mam1_history';
+    let debounceTimer = null;
 
-    <script>
-        let currentLogo = null;
+    // ========== INISIALISASI ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        renderForm();
+        renderHistory();
+        setupColorPickers();
+    });
 
-        function switchType() {
-            const type = document.getElementById('qrType').value;
-            document.querySelectorAll('.input-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(`form-${type}`).classList.add('active');
+    // ========== TAB SWITCHING ==========
+    function switchTab(tabName) {
+        // Update tampilan tab aktif
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+        });
+        const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+        activeTab.classList.add('active');
+        activeTab.setAttribute('aria-selected', 'true');
+
+        // Simpan tipe aktif
+        document.getElementById('currentType').value = tabName;
+
+        // Render form sesuai tipe
+        renderForm();
+        clearQR();
+    }
+
+    // ========== RENDER FORM DINAMIS ==========
+    function renderForm() {
+        const type = document.getElementById('currentType').value;
+        const form = document.getElementById('dynamicForm');
+        let html = '';
+
+        if (type === 'text') {
+            html = `
+                <div class="form-group">
+                    <label class="form-label" for="inputText">Teks atau URL</label>
+                    <input type="text" id="inputText" class="input-field"
+                        placeholder="https://mam1-paciran.sch.id" data-realtime autocomplete="off">
+                </div>`;
+        } else if (type === 'wifi') {
+            html = `
+                <div class="form-group">
+                    <label class="form-label" for="inputSSID">Nama Jaringan (SSID)</label>
+                    <input type="text" id="inputSSID" class="input-field"
+                        placeholder="Nama WiFi" data-realtime autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputPass">Password</label>
+                    <input type="text" id="inputPass" class="input-field"
+                        placeholder="Password WiFi" data-realtime autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputEnc">Tipe Keamanan</label>
+                    <select id="inputEnc" class="input-field" data-realtime>
+                        <option value="WPA">WPA / WPA2</option>
+                        <option value="WEP">WEP</option>
+                        <option value="nopass">Tanpa Password</option>
+                    </select>
+                </div>`;
+        } else if (type === 'contact') {
+            html = `
+                <div class="form-group">
+                    <label class="form-label" for="inputName">Nama Lengkap</label>
+                    <input type="text" id="inputName" class="input-field"
+                        placeholder="Nama kontak" data-realtime autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputPhone">Nomor Telepon</label>
+                    <input type="tel" id="inputPhone" class="input-field"
+                        placeholder="+62 812 3456 7890" data-realtime autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputEmail">Email</label>
+                    <input type="email" id="inputEmail" class="input-field"
+                        placeholder="email@contoh.com" data-realtime autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputOrg">Organisasi</label>
+                    <input type="text" id="inputOrg" class="input-field"
+                        placeholder="Nama organisasi" data-realtime autocomplete="off">
+                </div>`;
         }
 
-        function handleLogo(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        currentLogo = img;
-                        document.getElementById('file-btn-text').innerText = "Gambar Dipilih ✅";
-                    }
-                    img.src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
+        form.innerHTML = html;
+        // Pasang listener realtime pada semua input baru
+        setupRealtimeListeners();
+    }
+
+    // ========== AMBIL DATA QR ==========
+    function getQRData() {
+        const type = document.getElementById('currentType').value;
+
+        if (type === 'text') {
+            const el = document.getElementById('inputText');
+            return el ? el.value.trim() : '';
+        } else if (type === 'wifi') {
+            const ssid = document.getElementById('inputSSID');
+            const pass = document.getElementById('inputPass');
+            const enc  = document.getElementById('inputEnc');
+            if (!ssid || !ssid.value.trim()) return '';
+            return `WIFI:T:${enc ? enc.value : 'WPA'};S:${ssid.value.trim()};P:${pass ? pass.value.trim() : ''};;`;
+        } else if (type === 'contact') {
+            const name  = document.getElementById('inputName');
+            const phone = document.getElementById('inputPhone');
+            const email = document.getElementById('inputEmail');
+            const org   = document.getElementById('inputOrg');
+            if (!name || !name.value.trim()) return '';
+            let vcard = 'BEGIN:VCARD\nVERSION:3.0\nFN:' + name.value.trim();
+            if (phone && phone.value.trim()) vcard += '\nTEL:' + phone.value.trim();
+            if (email && email.value.trim()) vcard += '\nEMAIL:' + email.value.trim();
+            if (org   && org.value.trim())   vcard += '\nORG:' + org.value.trim();
+            vcard += '\nEND:VCARD';
+            return vcard;
+        }
+        return '';
+    }
+
+    // ========== GENERATE QR ==========
+    function generateQR() {
+        const data = getQRData();
+        if (!data) {
+            clearQR();
+            return;
         }
 
-        function generate() {
-            const type = document.getElementById('qrType').value;
-            let data = "";
-            let valid = true;
+        const container = document.getElementById('qrcode');
+        container.innerHTML = '';
 
-            // Logika Ambil Data per Tipe
-            if (type === 'url') {
-                data = document.getElementById('input-url').value;
-                if (!data) return alert("Masukkan URL!");
-            }
-            else if (type === 'text') {
-                data = document.getElementById('input-text').value;
-                if (!data) return alert("Masukkan teks!");
-            }
-            else if (type === 'wifi') {
-                const ssid = document.getElementById('input-ssid').value;
-                const pass = document.getElementById('input-pass').value;
-                const enc = document.getElementById('input-enc').value;
-                if (!ssid) return alert("Masukkan Nama WiFi (SSID)!");
-                data = `WIFI:T:${enc};S:${ssid};P:${pass};;`;
-            }
-            else if (type === 'email') {
-                const addr = document.getElementById('input-email-addr').value;
-                const sub = document.getElementById('input-email-subj').value;
-                const body = document.getElementById('input-email-body').value;
-                if (!addr) return alert("Masukkan alamat email!");
-                data = `mailto:${addr}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
-            }
-            else if (type === 'phone') {
-                const num = document.getElementById('input-phone').value;
-                if (!num) return alert("Masukkan nomor telepon!");
-                data = `tel:${num}`;
-            }
-            else if (type === 'sms') {
-                const num = document.getElementById('input-sms-num').value;
-                const msg = document.getElementById('input-sms-msg').value;
-                if (!num) return alert("Masukkan nomor HP!");
-                data = `smsto:${num}:${msg}`;
-            }
-            else if (type === 'vcard') {
-                const name = document.getElementById('input-vc-name').value;
-                const phone = document.getElementById('input-vc-phone').value;
-                const email = document.getElementById('input-vc-email').value;
-                const org = document.getElementById('input-vc-org').value;
-                if (!name || !phone) return alert("Nama dan Telepon wajib diisi!");
-                data = `BEGIN:VCARD\nVERSION:3.0\nN:${name}\nFN:${name}\nORG:${org}\nTEL;TYPE=CELL:${phone}\nEMAIL:${email}\nEND:VCARD`;
-            }
+        const qrColor  = document.getElementById('qrColor').value;
+        const bgColor  = document.getElementById('qrBgColor').value;
 
-            renderQR(data);
+        // Hapus lalu buat ulang QR instance
+        new QRCode(container, {
+            text: data,
+            width: 220,
+            height: 220,
+            colorDark: qrColor,
+            colorLight: bgColor,
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Tampilkan elemen preview
+        document.getElementById('qrPlaceholder').style.display = 'none';
+        container.style.display = 'flex';
+        document.getElementById('qrFooter').style.display = 'block';
+        document.getElementById('downloadBtn').style.display = 'flex';
+        document.getElementById('previewBadge').style.display = 'inline-flex';
+        document.getElementById('qrContainer').classList.add('has-qr');
+
+        // Trigger ulang animasi
+        container.style.animation = 'none';
+        container.offsetHeight; // reflow
+        container.style.animation = '';
+    }
+
+    // ========== HAPUS QR ==========
+    function clearQR() {
+        document.getElementById('qrcode').innerHTML = '';
+        document.getElementById('qrPlaceholder').style.display = 'flex';
+        document.getElementById('qrcode').style.display = 'none';
+        document.getElementById('qrFooter').style.display = 'none';
+        document.getElementById('downloadBtn').style.display = 'none';
+        document.getElementById('previewBadge').style.display = 'none';
+        document.getElementById('qrContainer').classList.remove('has-qr');
+    }
+
+    // ========== HANDLE GENERATE (dengan simpan riwayat) ==========
+    function handleGenerate() {
+        const data = getQRData();
+        if (!data) {
+            showToast('Masukkan data terlebih dahulu', 'error');
+            return;
         }
+        generateQR();
+        saveToHistory(data);
+        showToast('QR Code berhasil dibuat', 'success');
+    }
 
-        function renderQR(text) {
-            const rawDiv = document.getElementById('qr-raw');
-            rawDiv.innerHTML = "";
-            
-            const colorDark = document.getElementById('color-qr').value;
-            const colorLight = document.getElementById('color-bg').value;
-
-            // Generate Raw QR (Level H untuk Logo Support)
-            const qrcode = new QRCode(rawDiv, {
-                text: text,
-                width: 1000,
-                height: 1000,
-                colorDark : colorDark,
-                colorLight : colorLight,
-                correctLevel : QRCode.CorrectLevel.H
+    // ========== REALTIME PREVIEW ==========
+    function setupRealtimeListeners() {
+        document.querySelectorAll('[data-realtime]').forEach(el => {
+            el.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(generateQR, 280);
             });
+        });
+    }
 
-            setTimeout(() => {
-                const qrImg = rawDiv.querySelector('img');
-                const canvas = document.getElementById('finalCanvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Bersihkan Canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Background solid (fix transparansi)
-                ctx.fillStyle = colorLight;
-                ctx.fillRect(0,0, 1000, 1000);
+    // ========== COLOR PICKER ==========
+    function setupColorPickers() {
+        const qrColor = document.getElementById('qrColor');
+        const bgColor = document.getElementById('qrBgColor');
+        const qrVal   = document.getElementById('qrColorVal');
+        const bgVal   = document.getElementById('qrBgColorVal');
 
-                // Gambar QR
-                ctx.drawImage(qrImg, 0, 0);
+        qrColor.addEventListener('input', () => {
+            qrVal.textContent = qrColor.value.toUpperCase();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(generateQR, 180);
+        });
+        bgColor.addEventListener('input', () => {
+            bgVal.textContent = bgColor.value.toUpperCase();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(generateQR, 180);
+        });
+    }
 
-                // Gambar Logo jika ada
-                if (currentLogo) {
-                    const logoSize = 1000 * 0.2; // 20% dari ukuran
-                    const pos = (1000 - logoSize) / 2;
-                    
-                    // Background putih di belakang logo agar kontras (opsional, dihapus agar clean)
-                    // ctx.fillStyle = "white";
-                    // ctx.fillRect(pos-10, pos-10, logoSize+20, logoSize+20);
+    // ========== DOWNLOAD DENGAN FOOTER ==========
+    function downloadQR() {
+        let canvas = document.querySelector('#qrcode canvas');
 
-                    ctx.drawImage(currentLogo, pos, pos, logoSize, logoSize);
+        // Fallback: gunakan img jika canvas tidak tersedia
+        if (!canvas) {
+            const img = document.querySelector('#qrcode img');
+            if (!img) {
+                showToast('Generate QR terlebih dahulu', 'error');
+                return;
+            }
+            canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 220;
+            canvas.height = img.naturalHeight || 220;
+            canvas.getContext('2d').drawImage(img, 0, 0);
+        }
+
+        const scale = 2; // Resolusi tinggi
+        const pad = 40 * scale;
+        const footerH = 68 * scale;
+
+        const totalW = canvas.width * scale + pad * 2;
+        const totalH = canvas.height * scale + pad * 2 + footerH;
+
+        const exp = document.createElement('canvas');
+        exp.width = totalW;
+        exp.height = totalH;
+        const ctx = exp.getContext('2d');
+
+        // Latar putih
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, totalW, totalH);
+
+        // QR Code di tengah
+        const qrX = (totalW - canvas.width * scale) / 2;
+        ctx.drawImage(canvas, qrX, pad, canvas.width * scale, canvas.height * scale);
+
+        // Teks footer
+        const textBaseY = pad + canvas.height * scale;
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#6b7280';
+        ctx.font = 'bold ' + (13 * scale) + 'px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('MA MUHAMMADIYAH 1 PACIRAN', totalW / 2, textBaseY + 24 * scale);
+
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = (11 * scale) + 'px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('Pondok Pesantren Karangasem Muhammadiyah Paciran', totalW / 2, textBaseY + 43 * scale);
+        ctx.fillText('Tahun Pelajaran 2025/2026', totalW / 2, textBaseY + 59 * scale);
+
+        // Trigger download
+        const link = document.createElement('a');
+        link.download = 'qr-mam1-paciran.png';
+        link.href = exp.toDataURL('image/png');
+        link.click();
+
+        showToast('QR Code berhasil diunduh', 'success');
+    }
+
+    // ========== RIWAYAT (localStorage) ==========
+    function saveToHistory(data) {
+        if (!data) return;
+        let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        // Hindari duplikat
+        history = history.filter(h => h.data !== data);
+        history.unshift({
+            data: data,
+            type: document.getElementById('currentType').value,
+            ts: Date.now()
+        });
+        history = history.slice(0, 8);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        const list = document.getElementById('historyList');
+        const clearBtn = document.getElementById('clearAllBtn');
+
+        clearBtn.style.display = history.length > 0 ? 'flex' : 'none';
+
+        if (history.length === 0) {
+            list.innerHTML = '<p class="history-empty">Belum ada riwayat</p>';
+            return;
+        }
+
+        list.innerHTML = history.map((item, i) => {
+            const label = item.data.substring(0, 32) + (item.data.length > 32 ? '...' : '');
+            const icon = item.type === 'wifi' ? 'fa-wifi' : item.type === 'contact' ? 'fa-address-card' : 'fa-link';
+            return `
+                <div class="history-item" onclick="loadHistory(${i})" role="button" tabindex="0"
+                     onkeydown="if(event.key==='Enter')loadHistory(${i})">
+                    <div class="history-item-info">
+                        <i class="fas ${icon} history-item-icon"></i>
+                        <span class="history-item-text">${escapeHtml(label)}</span>
+                    </div>
+                    <div class="history-item-meta">
+                        <span class="history-item-time">${timeAgo(item.ts)}</span>
+                        <button class="history-item-delete" onclick="event.stopPropagation();deleteHistory(${i})"
+                                aria-label="Hapus riwayat">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function loadHistory(index) {
+        const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        const item = history[index];
+        if (!item) return;
+
+        switchTab(item.type);
+
+        // Isi kembali input berdasarkan tipe
+        setTimeout(() => {
+            if (item.type === 'text') {
+                const el = document.getElementById('inputText');
+                if (el) el.value = item.data;
+            } else if (item.type === 'wifi') {
+                const m = item.data.match(/WIFI:T:([^;]*);S:([^;]*);P:([^;]*);;/);
+                if (m) {
+                    const s = document.getElementById('inputSSID');
+                    const p = document.getElementById('inputPass');
+                    const e = document.getElementById('inputEnc');
+                    if (s) s.value = m[2];
+                    if (p) p.value = m[3];
+                    if (e) e.value = m[1];
                 }
+            } else if (item.type === 'contact') {
+                const fn = item.data.match(/FN:(.*)/);
+                const tel = item.data.match(/TEL:(.*)/);
+                const em = item.data.match(/EMAIL:(.*)/);
+                const org = item.data.match(/ORG:(.*)/);
+                if (fn) document.getElementById('inputName').value = fn[1];
+                if (tel) document.getElementById('inputPhone').value = tel[1];
+                if (em) document.getElementById('inputEmail').value = em[1];
+                if (org) document.getElementById('inputOrg').value = org[1];
+            }
+            generateQR();
+            showToast('Riwayat dimuat', 'success');
+        }, 60);
+    }
 
-                // Tampilkan tombol download
-                document.getElementById('downloadBtn').style.display = 'block';
-            }, 100);
-        }
+    function deleteHistory(index) {
+        let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+        history.splice(index, 1);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        renderHistory();
+    }
 
-        function download() {
-            const canvas = document.getElementById('finalCanvas');
-            const link = document.createElement('a');
-            link.download = 'qr-code-vianfairuzz.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
-    </script>
+    function clearAllHistory() {
+        localStorage.removeItem(HISTORY_KEY);
+        renderHistory();
+        showToast('Semua riwayat dihapus', 'success');
+    }
+
+    // ========== TOAST NOTIFIKASI ==========
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+        toast.innerHTML = icon + ' ' + message;
+        toast.className = 'toast ' + type;
+        // Trigger reflow untuk restart animasi
+        toast.offsetHeight;
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    // ========== UTILITAS ==========
+    function escapeHtml(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function timeAgo(ts) {
+        const diff = Date.now() - ts;
+        const min = Math.floor(diff / 60000);
+        if (min < 1) return 'Baru saja';
+        if (min < 60) return min + 'm lalu';
+        const hr = Math.floor(min / 60);
+        if (hr < 24) return hr + 'j lalu';
+        const day = Math.floor(hr / 24);
+        return day + 'h lalu';
+    }
+</script>
+
 </body>
 </html>
